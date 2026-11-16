@@ -1,0 +1,239 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#101410">
+<link rel="manifest" href="manifest.json">
+<title>SHRED & MASS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101410;color:#f4f5ef;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:20px 16px 40px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.logo{font-size:20px;font-weight:900;letter-spacing:1px}
+.logo span{color:#a5ef55}
+small,.muted{color:#9da69a}
+h1{font-size:30px;margin:10px 0 5px}
+h2{font-size:21px}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:20px 0}
+.tab{background:#252d24;color:white;border-radius:12px;padding:16px 5px;font-weight:bold}
+.tab.active{background:#a5ef55;color:#101410}
+.panel{background:#1b221b;border:1px solid #303a2e;border-radius:17px;padding:16px;margin:12px 0}
+.exercise{border-bottom:1px solid #303a2e;padding:15px 0}
+.exercise:last-child{border:0}
+.exercise strong{display:block;font-size:15px;margin-bottom:5px}
+.meta{font-size:12px;color:#a5ef55;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center}
+input{min-width:0;width:100%;background:#101610;border:1px solid #3b4539;color:white;border-radius:9px;padding:12px}
+input::placeholder{color:#778075}
+.field{flex:1}
+.field label{font-size:11px;color:#a0aa9b;display:block;margin-bottom:5px}
+.series{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.series button{background:#303b2d;color:#dce7d6;padding:9px 12px;border-radius:9px;font-size:12px}
+.series button.done{background:#a5ef55;color:#101410}
+.primary{background:#a5ef55;color:#101410;border-radius:11px;padding:14px;font-weight:800;width:100%;margin-top:12px}
+.secondary{background:#303b2d;color:white;border-radius:10px;padding:12px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat div{background:#252d24;padding:14px;border-radius:12px}
+.stat b{font-size:24px;display:block;color:#a5ef55}
+.hidden{display:none!important}
+#history div{padding:12px 0;border-bottom:1px solid #303a2e}
+footer{text-align:center;margin-top:28px;color:#798477;font-size:11px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">SHRED <span>&</span> MASS</div>
+ <small>TRAINING LOG</small>
+</header>
+
+<section>
+ <small>SEU PROJETO DE HIPERTROFIA</small>
+ <h1>BUILD YOUR SIZE.</h1>
+ <p class="muted">Treine. Registre. Evolua.</p>
+</section>
+
+<div class="stat">
+ <div><b id="total">0</b><small>Exercícios registrados</small></div>
+ <div><b id="workouts">0</b><small>Treinos concluídos</small></div>
+</div>
+
+<nav class="tabs">
+ <button class="tab active" data-day="A">A</button>
+ <button class="tab" data-day="B">B</button>
+ <button class="tab" data-day="C">C</button>
+ <button class="tab" data-day="D">D</button>
+</nav>
+
+<section class="panel">
+ <small id="dayLabel">TREINO A</small>
+ <h2 id="dayTitle">Ombros + Tríceps</h2>
+ <p class="muted" id="dayDescription">Prioridade: largura e volume.</p>
+ <div id="exerciseList"></div>
+ <button class="primary" id="finish">FINALIZAR TREINO</button>
+</section>
+
+<section class="panel">
+ <h2>Meu histórico</h2>
+ <div id="history"><p class="muted">Seus registros aparecerão aqui.</p></div>
+</section>
+
+<section class="panel">
+ <h2>Backup dos meus dados</h2>
+ <p class="muted">Exporte seus registros para guardar uma cópia.</p>
+ <button class="secondary" onclick="exportData()">EXPORTAR BACKUP</button>
+ <button class="secondary" onclick="document.getElementById('restore').click()">RESTAURAR BACKUP</button>
+ <input id="restore" type="file" accept=".json" hidden>
+</section>
+
+<footer>SHRED & MASS · SUA EVOLUÇÃO COMEÇA AQUI</footer>
+
+<script>
+const plans={
+ A:{title:"Ombros + Tríceps",desc:"Largura e volume",items:[
+ ["Desenvolvimento com halteres",3,"6–10"],
+ ["Elevação lateral com halteres",4,"10–15"],
+ ["Elevação lateral na polia",3,"12–15"],
+ ["Crucifixo inverso",3,"12–15"],
+ ["Tríceps testa",3,"8–12"],
+ ["Tríceps corda",3,"10–15"],
+ ["Tríceps francês unilateral",3,"10–12"],
+ ["Face pull",2,"15–20"]]},
+ B:{title:"Costas + Bíceps",desc:"Largura e densidade",items:[
+ ["Barra fixa / puxada alta",3,"6–10"],
+ ["Remada curvada",3,"8–10"],
+ ["Remada articulada",3,"8–12"],
+ ["Puxada unilateral",3,"10–12"],
+ ["Pulldown",2,"12–15"],
+ ["Rosca direta",3,"8–12"],
+ ["Rosca martelo",3,"10–12"],
+ ["Rosca inclinada",2,"10–12"]]},
+ C:{title:"Pernas completas",desc:"Força e proporção",items:[
+ ["Agachamento livre",3,"6–10"],
+ ["Leg press",3,"10–12"],
+ ["Cadeira extensora",3,"12–15"],
+ ["Mesa flexora",3,"10–12"],
+ ["Stiff",3,"8–12"],
+ ["Cadeira abdutora",2,"12–15"],
+ ["Panturrilha em pé",3,"12–15"],
+ ["Panturrilha sentada",3,"12–20"]]},
+ D:{title:"Peito + Abdômen",desc:"Volume e estabilidade",items:[
+ ["Supino inclinado",3,"6–10"],
+ ["Supino reto",3,"8–10"],
+ ["Chest press",3,"10–12"],
+ ["Crucifixo na polia",3,"12–15"],
+ ["Abdominal na polia",3,"12–15"],
+ ["Elevação de pernas",3,"12–15"],
+ ["Prancha",3,"30–60 segundos"]]}
+};
+
+let day="A";
+let data=JSON.parse(localStorage.getItem("shredData")||'{"logs":[],"completed":[]}');
+let current={};
+
+function save(){
+ localStorage.setItem("shredData",JSON.stringify(data));
+ updateStats();
+ renderHistory();
+}
+
+function updateStats(){
+ document.getElementById("total").textContent=data.logs.length;
+ document.getElementById("workouts").textContent=data.completed.length;
+}
+
+function render(){
+ const p=plans[day];
+ document.getElementById("dayLabel").textContent="TREINO "+day;
+ document.getElementById("dayTitle").textContent=p.title;
+ document.getElementById("dayDescription").textContent=p.desc;
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.day===day));
+
+ const list=document.getElementById("exerciseList");
+ list.innerHTML="";
+ p.items.forEach((item,index)=>{
+  const key=day+"-"+index;
+  const old=data.logs.filter(x=>x.key===key).at(-1);
+  const saved=current[key]||{};
+  const weight=saved.weight??"";
+  const reps=saved.reps??"";
+  const completed=saved.done||[];
+  const el=document.createElement("div");
+  el.className="exercise";
+  el.innerHTML=`
+   <strong>${index+1}. ${item[0]}</strong>
+   <div class="meta">${item[1]} séries · ${item[2]} repetições</div>
+   ${old?`<small>Último registro: ${old.weight} kg · ${old.reps} reps</small>`:""}
+   <div class="row" style="margin-top:10px">
+    <div class="field"><label>CARGA (KG)</label><input type="number" min="0" step="0.5" placeholder="Ex.: 30" class="weight" value="${weight}"></div>
+    <div class="field"><label>REPETIÇÕES</label><input type="number" min="0" placeholder="Ex.: 12" class="reps" value="${reps}"></div>
+   </div>
+   <div class="series">${Array.from({length:item[1]},(_,n)=>`<button data-set="${n}" class="${completed.includes(n)?"done":""}">${completed.includes(n)?"✓ ":""}Série ${n+1}</button>`).join("")}</div>
+   <button class="primary register">SALVAR EXERCÍCIO</button>`;
+  const wi=el.querySelector(".weight"),ri=el.querySelector(".reps");
+  wi.oninput=()=>{current[key]={...current[key],weight:wi.value}};
+  ri.oninput=()=>{current[key]={...current[key],reps:ri.value}};
+  el.querySelectorAll("[data-set]").forEach(btn=>{
+   btn.onclick=()=>{
+    let c=current[key]||{weight:wi.value,reps:ri.value,done:[]};
+    c.done=c.done||[];
+    const n=Number(btn.dataset.set);
+    c.done=c.done.includes(n)?c.done.filter(x=>x!==n):[...c.done,n];
+    current[key]=c;
+    btn.classList.toggle("done",c.done.includes(n));
+    btn.textContent=(c.done.includes(n)?"✓ ":"")+"Série "+(n+1);
+   };
+  });
+  el.querySelector(".register").onclick=()=>{
+   if(!wi.value||!ri.value){alert("Informe a carga e as repetições.");return}
+   data.logs.push({key,day,exercise:item[0],weight:wi.value,reps:ri.value,done:completed.length,date:new Date().toLocaleDateString("pt-BR")});
+   current[key]={...current[key],weight:wi.value,reps:ri.value};
+   save();
+   alert("Exercício registrado!");
+  };
+  list.appendChild(el);
+ });
+}
+
+function renderHistory(){
+ const h=document.getElementById("history");
+ if(!data.logs.length){h.innerHTML='<p class="muted">Seus registros aparecerão aqui.</p>';return}
+ h.innerHTML=data.logs.slice().reverse().slice(0,20).map(x=>
+ `<div><strong>${x.exercise}</strong><br><small>Treino ${x.day} · ${x.weight} kg · ${x.reps} reps · ${x.date}</small></div>`
+ ).join("");
+}
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{day=b.dataset.day;render()});
+document.getElementById("finish").onclick=()=>{
+ if(!confirm("Deseja finalizar este treino?"))return;
+ data.completed.push({day,date:new Date().toLocaleDateString("pt-BR")});
+ save();
+ alert("Treino concluído! Excelente trabalho.");
+};
+
+function exportData(){
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="shred-mass-backup.json";a.click();
+ URL.revokeObjectURL(url);
+}
+document.getElementById("restore").onchange=async e=>{
+ try{
+  const f=e.target.files[0];if(!f)return;
+  const d=JSON.parse(await f.text());
+  if(!Array.isArray(d.logs)||!Array.isArray(d.completed))throw Error();
+  if(!confirm("Restaurar este backup? Os dados atuais serão substituídos."))return;
+  data=d;save();render();alert("Backup restaurado!");
+ }catch{alert("Arquivo de backup inválido.")}
+};
+render();updateStats();renderHistory();
+if("serviceWorker" in navigator){
+ window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+}
+</script>
+</body>
+</html>
