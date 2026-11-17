@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -9,231 +8,272 @@
 <title>SHRED & MASS</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101410;color:#f4f5ef;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:20px 16px 40px}
-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.logo{font-size:20px;font-weight:900;letter-spacing:1px}
-.logo span{color:#a5ef55}
-small,.muted{color:#9da69a}
-h1{font-size:30px;margin:10px 0 5px}
-h2{font-size:21px}
-button,input{font:inherit}
-button{cursor:pointer;border:0}
-.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:20px 0}
-.tab{background:#252d24;color:white;border-radius:12px;padding:16px 5px;font-weight:bold}
+body{margin:0;background:#101410;color:#f4f5ef;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;padding:18px 14px 40px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.logo{font-size:20px;font-weight:900;letter-spacing:1px}.logo span{color:#a5ef55}
+small,.muted{color:#9da69a}h1{font-size:28px;margin:10px 0 5px}h2{font-size:20px;margin:8px 0 12px}
+button,input,select{font:inherit}button{cursor:pointer;border:0}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:18px 0}
+.tab{background:#252d24;color:white;border-radius:11px;padding:12px 4px;font-weight:bold;font-size:12px}
 .tab.active{background:#a5ef55;color:#101410}
-.panel{background:#1b221b;border:1px solid #303a2e;border-radius:17px;padding:16px;margin:12px 0}
-.exercise{border-bottom:1px solid #303a2e;padding:15px 0}
-.exercise:last-child{border:0}
+.panel{background:#1b221b;border:1px solid #303a2e;border-radius:17px;padding:15px;margin:12px 0}
+.exercise{border-bottom:1px solid #303a2e;padding:14px 0}.exercise:last-child{border:0}
 .exercise strong{display:block;font-size:15px;margin-bottom:5px}
-.meta{font-size:12px;color:#a5ef55;margin-bottom:12px}
-.row{display:flex;gap:8px;align-items:center}
-input{min-width:0;width:100%;background:#101610;border:1px solid #3b4539;color:white;border-radius:9px;padding:12px}
-input::placeholder{color:#778075}
-.field{flex:1}
+.meta{font-size:12px;color:#a5ef55;margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:end}.field{flex:1;min-width:0}
 .field label{font-size:11px;color:#a0aa9b;display:block;margin-bottom:5px}
+input,select{min-width:0;width:100%;background:#101610;border:1px solid #3b4539;color:white;border-radius:9px;padding:11px}
+input::placeholder{color:#778075}
 .series{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
-.series button{background:#303b2d;color:#dce7d6;padding:9px 12px;border-radius:9px;font-size:12px}
+.series button{background:#303b2d;color:#dce7d6;padding:9px 11px;border-radius:9px;font-size:12px}
 .series button.done{background:#a5ef55;color:#101410}
-.primary{background:#a5ef55;color:#101410;border-radius:11px;padding:14px;font-weight:800;width:100%;margin-top:12px}
-.secondary{background:#303b2d;color:white;border-radius:10px;padding:12px}
+.primary{background:#a5ef55;color:#101410;border-radius:11px;padding:13px;font-weight:800;width:100%;margin-top:12px}
+.secondary{background:#303b2d;color:white;border-radius:10px;padding:11px;font-weight:650}
+.danger{background:#492b29;color:#ffd9d5;border-radius:10px;padding:10px}
 .stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat div{background:#252d24;padding:14px;border-radius:12px}
-.stat b{font-size:24px;display:block;color:#a5ef55}
+.stat div{background:#252d24;padding:13px;border-radius:12px}
+.stat b{font-size:23px;display:block;color:#a5ef55}
 .hidden{display:none!important}
-#history div{padding:12px 0;border-bottom:1px solid #303a2e}
-footer{text-align:center;margin-top:28px;color:#798477;font-size:11px}
+.entry{padding:12px 0;border-bottom:1px solid #303a2e}.entry:last-child{border:0}
+.entry-title{font-weight:750}.pill{display:inline-block;background:#303b2d;color:#cfe6c1;border-radius:20px;padding:4px 8px;font-size:11px;margin:3px 3px 0 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.editor-item{border-bottom:1px solid #303a2e;padding:12px 0}
+.actions{display:flex;gap:7px;margin-top:8px}.actions button{flex:1}
+.chart-wrap{background:#141b14;border-radius:12px;padding:12px;margin:12px 0;overflow:hidden}
+canvas{width:100%;height:220px;display:block}
+footer{text-align:center;margin-top:25px;color:#798477;font-size:11px}
+@media(max-width:380px){.tab{font-size:11px;padding:11px 2px}.row{gap:6px}}
 </style>
 </head>
 <body>
-<header>
- <div class="logo">SHRED <span>&</span> MASS</div>
- <small>TRAINING LOG</small>
-</header>
-
-<section>
- <small>SEU PROJETO DE HIPERTROFIA</small>
- <h1>BUILD YOUR SIZE.</h1>
- <p class="muted">Treine. Registre. Evolua.</p>
-</section>
-
+<header><div class="logo">SHRED <span>&</span> MASS</div><small>TRAINING LOG</small></header>
+<section><small>SEU PROJETO DE HIPERTROFIA</small><h1>BUILD YOUR SIZE.</h1><p class="muted">Treine. Registre. Evolua.</p></section>
 <div class="stat">
- <div><b id="total">0</b><small>Exercícios registrados</small></div>
+ <div><b id="total">0</b><small>Séries registradas</small></div>
  <div><b id="workouts">0</b><small>Treinos concluídos</small></div>
 </div>
-
 <nav class="tabs">
- <button class="tab active" data-day="A">A</button>
- <button class="tab" data-day="B">B</button>
- <button class="tab" data-day="C">C</button>
- <button class="tab" data-day="D">D</button>
+ <button class="tab active" data-tab="training">TREINO</button>
+ <button class="tab" data-tab="history">HISTÓRICO</button>
+ <button class="tab" data-tab="progress">EVOLUÇÃO</button>
+ <button class="tab" data-tab="editor">EDITAR</button>
 </nav>
 
-<section class="panel">
- <small id="dayLabel">TREINO A</small>
- <h2 id="dayTitle">Ombros + Tríceps</h2>
- <p class="muted" id="dayDescription">Prioridade: largura e volume.</p>
- <div id="exerciseList"></div>
- <button class="primary" id="finish">FINALIZAR TREINO</button>
+<main>
+<section id="training" class="view">
+ <section class="panel">
+  <div class="row"><div class="field"><label>SELECIONE O TREINO</label><select id="daySelect"></select></div></div>
+  <small id="dayLabel">TREINO A</small><h2 id="dayTitle"></h2><p class="muted" id="dayDescription"></p>
+  <div id="exerciseList"></div>
+  <button class="primary" id="finish">FINALIZAR TREINO</button>
+ </section>
+</section>
+
+<section id="history" class="view hidden">
+ <section class="panel"><h2>Histórico de treinos</h2><p class="muted">Consulte as cargas, repetições e séries registradas em cada sessão.</p><div id="historyList"></div></section>
+</section>
+
+<section id="progress" class="view hidden">
+ <section class="panel"><h2>Evolução por grupo muscular</h2>
+  <label class="muted" for="muscleSelect">GRUPO MUSCULAR</label><select id="muscleSelect"></select>
+  <div id="progressSummary" class="muted" style="margin:12px 0"></div>
+  <p class="muted" style="font-size:12px">A comparação considera carga × repetições registradas. Use-a como indicador de tendência, considerando também execução, amplitude, descanso e recuperação.</p>
+  <div class="chart-wrap"><small>EVOLUÇÃO DA CARGA (KG)</small><canvas id="weightChart" width="700" height="260"></canvas></div>
+  <div class="chart-wrap"><small>EVOLUÇÃO DAS REPETIÇÕES</small><canvas id="repsChart" width="700" height="260"></canvas></div>
+  <div class="chart-wrap"><small>RECORDES PESSOAIS POR EXERCÍCIO</small><div id="recordsList"></div></div>
+  <div class="chart-wrap"><small>COMPARATIVO DE DESEMPENHO</small><div id="periodCompare"></div></div>
+  <div id="progressDetails"></div>
+ </section>
+</section>
+
+<section id="editor" class="view hidden">
+ <section class="panel">
+  <h2>Gerenciar treinos</h2><p class="muted">Crie divisões, renomeie treinos e ajuste exercícios e séries conforme sua evolução.</p>
+  <div class="row"><div class="field"><label>TREINO</label><select id="editDaySelect"></select></div><button class="secondary" id="addDay">+ TREINO</button></div>
+  <div class="field" style="margin-top:10px"><label>NOME DO TREINO</label><input id="editTitle" placeholder="Ex.: Ombros + Tríceps"></div>
+  <div class="field" style="margin-top:8px"><label>FOCO / DESCRIÇÃO</label><input id="editDesc" placeholder="Ex.: Largura e volume"></div>
+  <button class="primary" id="saveDay">SALVAR NOME DO TREINO</button>
+ </section>
+ <section class="panel">
+  <h2>Exercícios deste treino</h2><div id="editorList"></div>
+  <h2 style="margin-top:18px">Adicionar exercício</h2>
+  <div class="field"><label>NOME</label><input id="newExercise" placeholder="Nome do exercício"></div>
+  <div class="grid2" style="margin-top:8px">
+   <div class="field"><label>NÚMERO DE SÉRIES</label><input id="newSets" type="number" min="1" max="20" value="3"></div>
+   <div class="field"><label>FAIXA DE REPETIÇÕES</label><input id="newRange" placeholder="Ex.: 8–12"></div>
+  </div>
+  <div class="field" style="margin-top:8px"><label>GRUPO MUSCULAR</label><select id="newMuscle"></select></div>
+  <button class="primary" id="addExercise">ADICIONAR EXERCÍCIO</button>
+ </section>
 </section>
 
 <section class="panel">
- <h2>Meu histórico</h2>
- <div id="history"><p class="muted">Seus registros aparecerão aqui.</p></div>
-</section>
-
-<section class="panel">
- <h2>Backup dos meus dados</h2>
- <p class="muted">Exporte seus registros para guardar uma cópia.</p>
+ <h2>Backup dos meus dados</h2><p class="muted">Exporte seus registros e sua configuração de treinos para guardar uma cópia.</p>
  <button class="secondary" onclick="exportData()">EXPORTAR BACKUP</button>
  <button class="secondary" onclick="document.getElementById('restore').click()">RESTAURAR BACKUP</button>
  <input id="restore" type="file" accept=".json" hidden>
 </section>
-
-<footer>SHRED & MASS · SUA EVOLUÇÃO COMEÇA AQUI</footer>
+</main>
+<footer>SHRED & MASS · PROGRESSÃO COM INTELIGÊNCIA</footer>
 
 <script>
-const plans={
+const defaultPlans={
  A:{title:"Ombros + Tríceps",desc:"Largura e volume",items:[
- ["Desenvolvimento com halteres",3,"6–10"],
- ["Elevação lateral com halteres",4,"10–15"],
- ["Elevação lateral na polia",3,"12–15"],
- ["Crucifixo inverso",3,"12–15"],
- ["Tríceps testa",3,"8–12"],
- ["Tríceps corda",3,"10–15"],
- ["Tríceps francês unilateral",3,"10–12"],
- ["Face pull",2,"15–20"]]},
+ ["Desenvolvimento com halteres",3,"6–10","Ombros"],["Elevação lateral com halteres",4,"10–15","Ombros"],["Elevação lateral na polia",3,"12–15","Ombros"],["Crucifixo inverso",3,"12–15","Ombros"],["Tríceps testa",3,"8–12","Tríceps"],["Tríceps corda",3,"10–15","Tríceps"],["Tríceps francês unilateral",3,"10–12","Tríceps"],["Face pull",2,"15–20","Ombros"]]},
  B:{title:"Costas + Bíceps",desc:"Largura e densidade",items:[
- ["Barra fixa / puxada alta",3,"6–10"],
- ["Remada curvada",3,"8–10"],
- ["Remada articulada",3,"8–12"],
- ["Puxada unilateral",3,"10–12"],
- ["Pulldown",2,"12–15"],
- ["Rosca direta",3,"8–12"],
- ["Rosca martelo",3,"10–12"],
- ["Rosca inclinada",2,"10–12"]]},
+ ["Barra fixa / puxada alta",3,"6–10","Costas"],["Remada curvada",3,"8–10","Costas"],["Remada articulada",3,"8–12","Costas"],["Puxada unilateral",3,"10–12","Costas"],["Pulldown",2,"12–15","Costas"],["Rosca direta",3,"8–12","Bíceps"],["Rosca martelo",3,"10–12","Bíceps"],["Rosca inclinada",2,"10–12","Bíceps"]]},
  C:{title:"Pernas completas",desc:"Força e proporção",items:[
- ["Agachamento livre",3,"6–10"],
- ["Leg press",3,"10–12"],
- ["Cadeira extensora",3,"12–15"],
- ["Mesa flexora",3,"10–12"],
- ["Stiff",3,"8–12"],
- ["Cadeira abdutora",2,"12–15"],
- ["Panturrilha em pé",3,"12–15"],
- ["Panturrilha sentada",3,"12–20"]]},
+ ["Agachamento livre",3,"6–10","Pernas"],["Leg press",3,"10–12","Pernas"],["Cadeira extensora",3,"12–15","Pernas"],["Mesa flexora",3,"10–12","Pernas"],["Stiff",3,"8–12","Pernas"],["Cadeira abdutora",2,"12–15","Pernas"],["Panturrilha em pé",3,"12–15","Pernas"],["Panturrilha sentada",3,"12–20","Pernas"]]},
  D:{title:"Peito + Abdômen",desc:"Volume e estabilidade",items:[
- ["Supino inclinado",3,"6–10"],
- ["Supino reto",3,"8–10"],
- ["Chest press",3,"10–12"],
- ["Crucifixo na polia",3,"12–15"],
- ["Abdominal na polia",3,"12–15"],
- ["Elevação de pernas",3,"12–15"],
- ["Prancha",3,"30–60 segundos"]]}
+ ["Supino inclinado",3,"6–10","Peito"],["Supino reto",3,"8–10","Peito"],["Chest press",3,"10–12","Peito"],["Crucifixo na polia",3,"12–15","Peito"],["Abdominal na polia",3,"12–15","Abdômen"],["Elevação de pernas",3,"12–15","Abdômen"],["Prancha",3,"30–60 segundos","Abdômen"]]}
 };
-
-let day="A";
+const muscleOptions=["Ombros","Tríceps","Costas","Bíceps","Pernas","Peito","Abdômen","Outro"];
 let data=JSON.parse(localStorage.getItem("shredData")||'{"logs":[],"completed":[]}');
+if(!Array.isArray(data.logs))data.logs=[];
+if(!Array.isArray(data.completed))data.completed=[];
+if(!data.plans)data.plans=JSON.parse(JSON.stringify(defaultPlans));
+let day=Object.keys(data.plans)[0]||"A";
 let current={};
-
-function save(){
- localStorage.setItem("shredData",JSON.stringify(data));
- updateStats();
- renderHistory();
+const $=id=>document.getElementById(id);
+function persist(){localStorage.setItem("shredData",JSON.stringify(data));updateStats();renderHistory();renderProgress();}
+function updateStats(){$("total").textContent=data.logs.length;$("workouts").textContent=data.completed.length;}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function lastFor(key){return data.logs.filter(x=>x.key===key).at(-1);}
+function progressionHint(log,range){
+ const m=String(range||"").match(/(\\d+)\\s*[–-]\\s*(\\d+)/);
+ if(!m)return "Referência: compare carga e repetições com a última sessão.";
+ const upper=Number(m[2]), reps=Number(log.reps);
+ if(reps>=upper)return "Você atingiu o topo da faixa na última sessão. Se a execução estiver boa, considere um pequeno aumento de carga na próxima.";
+ if(reps>0)return `Referência: tente progredir gradualmente em direção a ${upper} repetições antes de aumentar a carga.`;
+ return "Compare com sua última execução e priorize a técnica.";
 }
-
-function updateStats(){
- document.getElementById("total").textContent=data.logs.length;
- document.getElementById("workouts").textContent=data.completed.length;
+function renderDaySelectors(){
+ const opts=Object.keys(data.plans).map(k=>`<option value="${esc(k)}">Treino ${esc(k)} · ${esc(data.plans[k].title)}</option>`).join("");
+ $("daySelect").innerHTML=opts;$("editDaySelect").innerHTML=opts;
+ $("daySelect").value=day;$("editDaySelect").value=day;
 }
-
 function render(){
- const p=plans[day];
- document.getElementById("dayLabel").textContent="TREINO "+day;
- document.getElementById("dayTitle").textContent=p.title;
- document.getElementById("dayDescription").textContent=p.desc;
- document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.day===day));
-
- const list=document.getElementById("exerciseList");
- list.innerHTML="";
+ renderDaySelectors();const p=data.plans[day];if(!p)return;
+ $("dayLabel").textContent="TREINO "+day;$("dayTitle").textContent=p.title;$("dayDescription").textContent=p.desc;
+ const list=$("exerciseList");list.innerHTML="";
  p.items.forEach((item,index)=>{
-  const key=day+"-"+index;
-  const old=data.logs.filter(x=>x.key===key).at(-1);
-  const saved=current[key]||{};
-  const weight=saved.weight??"";
-  const reps=saved.reps??"";
+  const key=day+"-"+item[0];const old=lastFor(key);const saved=current[key]||{};
   const completed=saved.done||[];
-  const el=document.createElement("div");
-  el.className="exercise";
-  el.innerHTML=`
-   <strong>${index+1}. ${item[0]}</strong>
-   <div class="meta">${item[1]} séries · ${item[2]} repetições</div>
-   ${old?`<small>Último registro: ${old.weight} kg · ${old.reps} reps</small>`:""}
-   <div class="row" style="margin-top:10px">
-    <div class="field"><label>CARGA (KG)</label><input type="number" min="0" step="0.5" placeholder="Ex.: 30" class="weight" value="${weight}"></div>
-    <div class="field"><label>REPETIÇÕES</label><input type="number" min="0" placeholder="Ex.: 12" class="reps" value="${reps}"></div>
-   </div>
-   <div class="series">${Array.from({length:item[1]},(_,n)=>`<button data-set="${n}" class="${completed.includes(n)?"done":""}">${completed.includes(n)?"✓ ":""}Série ${n+1}</button>`).join("")}</div>
-   <button class="primary register">SALVAR EXERCÍCIO</button>`;
+  const el=document.createElement("div");el.className="exercise";
+  el.innerHTML=`<strong>${index+1}. ${esc(item[0])}</strong><div class="meta">${item[1]} séries · ${esc(item[2])} reps · ${esc(item[3]||"Outro")}</div>
+  ${old?`<small>Última sessão: ${esc(old.weight)} kg · ${esc(old.reps)} reps</small>`:"<small class='muted'>Ainda sem registro anterior</small>"}
+  ${old?`<div class="meta" style="margin-top:7px;color:#d6e8c9">${progressionHint(old,item[2])}</div>`:""}
+  <div class="row" style="margin-top:10px"><div class="field"><label>CARGA (KG)</label><input type="number" min="0" step="0.5" placeholder="Ex.: 30" class="weight" value="${esc(saved.weight??old?.weight??"")}"></div>
+  <div class="field"><label>REPETIÇÕES</label><input type="number" min="1" step="1" placeholder="Ex.: 12" class="reps" value="${esc(saved.reps??"")}"></div></div>
+  <div class="series">${Array.from({length:Number(item[1])||1},(_,n)=>`<button data-set="${n}" class="${completed.includes(n)?"done":""}">${completed.includes(n)?"✓ ":""}Série ${n+1}</button>`).join("")}</div>
+  <button class="primary register">SALVAR EXERCÍCIO</button>`;
   const wi=el.querySelector(".weight"),ri=el.querySelector(".reps");
-  wi.oninput=()=>{current[key]={...current[key],weight:wi.value}};
-  ri.oninput=()=>{current[key]={...current[key],reps:ri.value}};
-  el.querySelectorAll("[data-set]").forEach(btn=>{
-   btn.onclick=()=>{
-    let c=current[key]||{weight:wi.value,reps:ri.value,done:[]};
-    c.done=c.done||[];
-    const n=Number(btn.dataset.set);
-    c.done=c.done.includes(n)?c.done.filter(x=>x!==n):[...c.done,n];
-    current[key]=c;
-    btn.classList.toggle("done",c.done.includes(n));
-    btn.textContent=(c.done.includes(n)?"✓ ":"")+"Série "+(n+1);
-   };
+  wi.oninput=()=>current[key]={...current[key],weight:wi.value};
+  ri.oninput=()=>current[key]={...current[key],reps:ri.value};
+  el.querySelectorAll("[data-set]").forEach(btn=>btn.onclick=()=>{
+   const c=current[key]||{weight:wi.value,reps:ri.value,done:[]};c.done=c.done||[];
+   const n=Number(btn.dataset.set);c.done=c.done.includes(n)?c.done.filter(x=>x!==n):[...c.done,n];
+   current[key]=c;btn.classList.toggle("done",c.done.includes(n));btn.textContent=(c.done.includes(n)?"✓ ":"")+"Série "+(n+1);
   });
   el.querySelector(".register").onclick=()=>{
-   if(!wi.value||!ri.value){alert("Informe a carga e as repetições.");return}
-   data.logs.push({key,day,exercise:item[0],weight:wi.value,reps:ri.value,done:completed.length,date:new Date().toLocaleDateString("pt-BR")});
-   current[key]={...current[key],weight:wi.value,reps:ri.value};
-   save();
-   alert("Exercício registrado!");
+   if(wi.value.trim()===""||ri.value.trim()===""||Number(wi.value)<0||Number(ri.value)<1){alert("Preencha Carga e Repetições com valores válidos.");return;}
+   const c=current[key]||{done:[]};const done=c.done||[];
+   const next=Array.from({length:Number(item[1])||1},(_,n)=>n).find(n=>!done.includes(n));
+   if(next===undefined){alert("Todas as séries deste exercício já estão marcadas. Desmarque uma série se precisar corrigir.");return;}
+   const stamp=new Date().toISOString();
+   data.logs.push({key,day,exercise:item[0],muscle:item[3]||"Outro",weight:Number(wi.value),reps:Number(ri.value),set:next+1,date:new Date().toLocaleDateString("pt-BR"),timestamp:stamp});
+   c.weight=wi.value;c.reps=ri.value;c.done=[...done,next];current[key]=c;
+   saveCurrentAndRender();alert("Série "+(next+1)+" registrada!");
   };
   list.appendChild(el);
  });
 }
-
+function saveCurrentAndRender(){localStorage.setItem("shredData",JSON.stringify(data));updateStats();renderHistory();renderProgress();render();}
 function renderHistory(){
- const h=document.getElementById("history");
- if(!data.logs.length){h.innerHTML='<p class="muted">Seus registros aparecerão aqui.</p>';return}
- h.innerHTML=data.logs.slice().reverse().slice(0,20).map(x=>
- `<div><strong>${x.exercise}</strong><br><small>Treino ${x.day} · ${x.weight} kg · ${x.reps} reps · ${x.date}</small></div>`
- ).join("");
+ const h=$("historyList");if(!data.logs.length){h.innerHTML='<p class="muted">Seus registros aparecerão aqui.</p>';return;}
+ h.innerHTML=data.logs.slice().reverse().slice(0,100).map(x=>`<div class="entry"><div class="entry-title">${esc(x.exercise)} <span class="pill">Treino ${esc(x.day)}</span></div><small>Série ${x.set||"—"} · ${esc(x.weight)} kg · ${esc(x.reps)} reps · ${esc(x.date)}</small></div>`).join("");
 }
-
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{day=b.dataset.day;render()});
-document.getElementById("finish").onclick=()=>{
- if(!confirm("Deseja finalizar este treino?"))return;
- data.completed.push({day,date:new Date().toLocaleDateString("pt-BR")});
- save();
- alert("Treino concluído! Excelente trabalho.");
-};
-
-function exportData(){
- const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;a.download="shred-mass-backup.json";a.click();
- URL.revokeObjectURL(url);
+function renderProgress(){
+ const sel=$("muscleSelect");if(!sel)return;
+ const groups=[...new Set([...muscleOptions,...data.logs.map(x=>x.muscle||"Outro")])];
+ const previous=sel.value;sel.innerHTML=groups.map(x=>`<option>${esc(x)}</option>`).join("");if(groups.includes(previous))sel.value=previous;
+ drawProgress();
 }
-document.getElementById("restore").onchange=async e=>{
- try{
-  const f=e.target.files[0];if(!f)return;
-  const d=JSON.parse(await f.text());
-  if(!Array.isArray(d.logs)||!Array.isArray(d.completed))throw Error();
-  if(!confirm("Restaurar este backup? Os dados atuais serão substituídos."))return;
-  data=d;save();render();alert("Backup restaurado!");
- }catch{alert("Arquivo de backup inválido.")}
-};
-render();updateStats();renderHistory();
-if("serviceWorker" in navigator){
- window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
+function drawLine(canvasId,points,label){
+ const c=$(canvasId),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
+ const pad=42;ctx.strokeStyle="#354132";ctx.lineWidth=1;
+ for(let i=0;i<4;i++){const y=pad+(h-pad*1.5)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-12,y);ctx.stroke();}
+ if(!points.length){ctx.fillStyle="#9da69a";ctx.font="18px Arial";ctx.fillText("Sem dados suficientes",pad,h/2);return;}
+ const vals=points.map(p=>p.value),min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
+ ctx.strokeStyle="#a5ef55";ctx.lineWidth=4;ctx.beginPath();
+ points.forEach((p,i)=>{const x=pad+(w-pad-18)*(points.length===1?.5:i/(points.length-1));const y=h-pad-(p.value-min)/range*(h-pad*2);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
+ ctx.stroke();points.forEach((p,i)=>{const x=pad+(w-pad-18)*(points.length===1?.5:i/(points.length-1));const y=h-pad-(p.value-min)/range*(h-pad*2);ctx.fillStyle="#a5ef55";ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();});
+ ctx.fillStyle="#cbd5c5";ctx.font="13px Arial";ctx.fillText(String(max),5,pad+5);ctx.fillText(String(min),5,h-pad+4);
+ ctx.fillStyle="#9da69a";ctx.fillText("Mais antigo",pad,h-8);ctx.fillText("Mais recente",w-100,h-8);
 }
+function drawProgress(){
+ if(!$("muscleSelect"))return;const muscle=$("muscleSelect").value;
+ const logs=data.logs.filter(x=>(x.muscle||"Outro")===muscle).sort((a,b)=>(a.timestamp||"").localeCompare(b.timestamp||""));
+ // Uma observação por sessão/exercício: considera a melhor série registrada naquele dia.
+ const grouped=new Map();logs.forEach(x=>{const k=(x.timestamp||x.date||"").slice(0,10)+"|"+x.exercise;const old=grouped.get(k);if(!old||x.weight*x.reps>old.weight*old.reps)grouped.set(k,x);});
+ const points=[...grouped.values()].sort((a,b)=>(a.timestamp||"").localeCompare(b.timestamp||""));
+ drawLine("weightChart",points.map(x=>({value:Number(x.weight)})),"kg");
+ drawLine("repsChart",points.map(x=>({value:Number(x.reps)})),"reps");
+ if(!points.length){$("progressSummary").textContent="Registre seus exercícios para visualizar a evolução."; $("progressDetails").innerHTML="";$("recordsList").innerHTML="<p class='muted'>Ainda não há recordes registrados.</p>";$("periodCompare").innerHTML="<p class='muted'>Ainda não há dados para comparar.</p>";return;}
+ const first=points[0],last=points[points.length-1],dw=Number(last.weight)-Number(first.weight),dr=Number(last.reps)-Number(first.reps);
+ let comparison=`Carga: ${dw>0?"+":""}${dw.toFixed(1)} kg · Repetições: ${dr>0?"+":""}${dr}.`;
+ if(dw<0&&dr>0)comparison+=" Você reduziu a carga e aumentou as repetições — observe a evolução do desempenho, não apenas o peso.";
+ else if(dw>0&&dr<0)comparison+=" Você aumentou a carga e reduziu as repetições — compare com a faixa planejada.";
+ else if(dw>0&&dr>0)comparison+=" Houve aumento tanto de carga quanto de repetições.";
+ else if(dw<0&&dr<0)comparison+=" Houve queda em carga e repetições; confira recuperação, execução e contexto do treino.";
+ else comparison+=" Compare também a qualidade da execução e a faixa de repetições.";
+ $("progressSummary").textContent=`${muscle}: ${points.length} registros analisados. ${comparison}`;
+ // Recorde pessoal: maior carga registrada; em empate, maior número de repetições.
+ const byExercise={};
+ logs.forEach(x=>{const k=x.exercise; if(!byExercise[k]||Number(x.weight)>Number(byExercise[k].weight)||(Number(x.weight)===Number(byExercise[k].weight)&&Number(x.reps)>Number(byExercise[k].reps)))byExercise[k]=x;});
+ $("recordsList").innerHTML=Object.values(byExercise).map(x=>`<div class="entry"><strong>${esc(x.exercise)}</strong><br><small>Melhor carga registrada: ${x.weight} kg × ${x.reps} reps</small></div>`).join("");
+ // Comparativo dos últimos 7 e 30 dias contra o período imediatamente anterior.
+ const now=Date.now(), dayMs=86400000;
+ const timeOf=x=>x.timestamp?new Date(x.timestamp).getTime():new Date((x.date||"").split("/").reverse().join("-")).getTime();
+ function avgVolume(from,to){const arr=logs.filter(x=>{const t=timeOf(x);return Number.isFinite(t)&&t>=from&&t<to;});if(!arr.length)return null;return arr.reduce((s,x)=>s+Number(x.weight)*Number(x.reps),0)/arr.length;}
+ const wNow=avgVolume(now-7*dayMs,now+1),wPrev=avgVolume(now-14*dayMs,now-7*dayMs);
+ const mNow=avgVolume(now-30*dayMs,now+1),mPrev=avgVolume(now-60*dayMs,now-30*dayMs);
+ const fmt=(a,b)=>a===null||b===null?"Dados insuficientes":`${a>b?"↑":a<b?"↓":"="} ${b?((a-b)/b*100).toFixed(1)+"%":"—"} no volume médio por série`;
+ $("periodCompare").innerHTML=`<div class="entry"><strong>Últimos 7 dias × 7 dias anteriores</strong><br><small>${fmt(wNow,wPrev)}</small></div><div class="entry"><strong>Últimos 30 dias × 30 dias anteriores</strong><br><small>${fmt(mNow,mPrev)}</small></div><small class="muted">O volume por série (kg × repetições) é uma referência comparativa, não uma medida isolada de hipertrofia.</small>`;
+ $("progressDetails").innerHTML=points.slice().reverse().slice(0,12).map(x=>`<div class="entry"><strong>${esc(x.exercise)}</strong><br><small>${esc(x.date)} · ${x.weight} kg × ${x.reps} reps</small></div>`).join("");
+}
+function renderEditor(){
+ const p=data.plans[day];if(!p)return;$("editTitle").value=p.title;$("editDesc").value=p.desc;
+ $("editorList").innerHTML=p.items.map((it,i)=>`<div class="editor-item"><strong>${esc(it[0])}</strong><br><small>${it[1]} séries · ${esc(it[2])} reps · ${esc(it[3]||"Outro")}</small><div class="actions"><button class="secondary" data-edit="${i}">EDITAR</button><button class="danger" data-delete="${i}">EXCLUIR</button></div></div>`).join("");
+ $("editorList").querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>{if(confirm("Excluir este exercício do treino? Os registros antigos serão mantidos no histórico.")){p.items.splice(Number(b.dataset.delete),1);persist();renderEditor();render();}});
+ $("editorList").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{
+  const i=Number(b.dataset.edit),it=p.items[i];const name=prompt("Nome do exercício:",it[0]);if(name===null)return;
+  const sets=prompt("Quantidade de séries:",it[1]);if(sets===null)return;
+  const range=prompt("Faixa de repetições:",it[2]);if(range===null)return;
+  const muscle=prompt("Grupo muscular:",it[3]||"Outro");if(muscle===null)return;
+  if(!name.trim()||Number(sets)<1){alert("Informe um nome e pelo menos uma série.");return;}
+  p.items[i]=[name.trim(),Math.min(20,Number(sets)),range.trim(),muscle.trim()||"Outro"];persist();renderEditor();render();
+ });
+}
+function switchTab(tab){
+ document.querySelectorAll(".view").forEach(v=>v.classList.toggle("hidden",v.id!==tab));
+ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+ if(tab==="editor")renderEditor();if(tab==="progress")renderProgress();
+}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+$("daySelect").onchange=e=>{day=e.target.value;render();};
+$("editDaySelect").onchange=e=>{day=e.target.value;renderEditor();render();};
+$("finish").onclick=()=>{if(!confirm("Deseja finalizar este treino?"))return;data.completed.push({day,date:new Date().toLocaleDateString("pt-BR"),timestamp:new Date().toISOString()});persist();alert("Treino concluído! Excelente trabalho.");};
+$("muscleSelect").onchange=drawProgress;
+$("saveDay").onclick=()=>{data.plans[day].title=$("editTitle").value.trim()||data.plans[day].title;data.plans[day].desc=$("editDesc").value.trim();persist();render();renderEditor();alert("Treino atualizado!");};
+$("addDay").onclick=()=>{const key=prompt("Identificador do novo treino (ex.: E, F):");if(!key)return;const k=key.trim().toUpperCase();if(data.plans[k]){alert("Já existe um treino com esse identificador.");return;}const title=prompt("Nome do novo treino:")||"Novo treino";data.plans[k]={title,desc:"",items:[]};day=k;persist();render();renderEditor();};
+$("newMuscle").innerHTML=muscleOptions.map(x=>`<option>${x}</option>`).join("");
+$("addExercise").onclick=()=>{const name=$("newExercise").value.trim(),sets=Number($("newSets").value),range=$("newRange").value.trim(),muscle=$("newMuscle").value;if(!name||!Number.isInteger(sets)||sets<1||sets>20||!range){alert("Preencha nome, séries e faixa de repetições.");return;}data.plans[day].items.push([name,sets,range,muscle]);$("newExercise").value="";$("newRange").value="";persist();render();renderEditor();alert("Exercício adicionado!");};
+function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="shred-mass-backup.json";a.click();URL.revokeObjectURL(url);}
+$("restore").onchange=async e=>{try{const f=e.target.files[0];if(!f)return;const d=JSON.parse(await f.text());if(!Array.isArray(d.logs)||!Array.isArray(d.completed))throw Error();if(!confirm("Restaurar este backup? Os dados atuais serão substituídos."))return;if(!d.plans)d.plans=JSON.parse(JSON.stringify(defaultPlans));data=d;day=Object.keys(data.plans)[0]||"A";current={};persist();render();renderEditor();alert("Backup restaurado!");}catch{alert("Arquivo de backup inválido.");}e.target.value="";};
+function save(){persist();}
+render();renderEditor();updateStats();renderHistory();renderProgress();
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
 </script>
 </body>
 </html>
