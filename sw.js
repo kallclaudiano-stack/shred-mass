@@ -1,4 +1,4 @@
-const CACHE = "shred-mass-v3";
+const CACHE = "shred-mass-v5";
 const FILES = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)));

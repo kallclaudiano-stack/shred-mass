@@ -70,18 +70,16 @@ footer{text-align:center;margin-top:25px;color:#798477;font-size:11px}
 </section>
 
 <section id="history" class="view hidden">
- <section class="panel"><h2>Histórico de treinos</h2><p class="muted">Consulte as cargas, repetições e séries registradas em cada sessão.</p><div id="historyList"></div></section>
+ <section class="panel"><h2>Histórico por grupo muscular</h2><p class="muted">Os registros ficam vinculados ao músculo trabalhado, mesmo que você mude os exercícios ou a divisão A/B/C/D.</p><label class="muted" for="historyMuscleSelect">FILTRAR GRUPO MUSCULAR</label><select id="historyMuscleSelect"></select><div id="historyList"></div></section>
 </section>
 
 <section id="progress" class="view hidden">
  <section class="panel"><h2>Evolução por grupo muscular</h2>
-  <label class="muted" for="muscleSelect">GRUPO MUSCULAR</label><select id="muscleSelect"></select>
+  <label class="muted" for="workoutSelect">SELECIONE O GRUPO MUSCULAR</label><select id="workoutSelect"></select>
   <div id="progressSummary" class="muted" style="margin:12px 0"></div>
-  <p class="muted" style="font-size:12px">A comparação considera carga × repetições registradas. Use-a como indicador de tendência, considerando também execução, amplitude, descanso e recuperação.</p>
-  <div class="chart-wrap"><small>EVOLUÇÃO DA CARGA (KG)</small><canvas id="weightChart" width="700" height="260"></canvas></div>
-  <div class="chart-wrap"><small>EVOLUÇÃO DAS REPETIÇÕES</small><canvas id="repsChart" width="700" height="260"></canvas></div>
-  <div class="chart-wrap"><small>RECORDES PESSOAIS POR EXERCÍCIO</small><div id="recordsList"></div></div>
-  <div class="chart-wrap"><small>COMPARATIVO DE DESEMPENHO</small><div id="periodCompare"></div></div>
+  <p class="muted" style="font-size:12px">O gráfico acompanha cada grupo muscular ao longo do tempo, sem depender do Treino A, B, C ou D. Os registros antigos permanecem associados ao músculo que foi trabalhado naquele dia, mesmo que você reorganize sua divisão futuramente. O indicador é o volume acumulado (carga × repetições).</p>
+  <div class="chart-wrap"><small>VOLUME DO GRUPO MUSCULAR POR SESSÃO (KG × REPETIÇÕES)</small><canvas id="workoutChart" width="700" height="260"></canvas></div>
+  <div class="chart-wrap"><small>COMPARAÇÃO COM A SESSÃO ANTERIOR</small><div id="sessionCompare"></div></div>
   <div id="progressDetails"></div>
  </section>
 </section>
@@ -93,6 +91,7 @@ footer{text-align:center;margin-top:25px;color:#798477;font-size:11px}
   <div class="field" style="margin-top:10px"><label>NOME DO TREINO</label><input id="editTitle" placeholder="Ex.: Ombros + Tríceps"></div>
   <div class="field" style="margin-top:8px"><label>FOCO / DESCRIÇÃO</label><input id="editDesc" placeholder="Ex.: Largura e volume"></div>
   <button class="primary" id="saveDay">SALVAR NOME DO TREINO</button>
+  <button class="danger" id="deleteDay" style="width:100%;margin-top:10px">EXCLUIR ESTE TREINO</button>
  </section>
  <section class="panel">
   <h2>Exercícios deste treino</h2><div id="editorList"></div>
@@ -138,7 +137,7 @@ const $=id=>document.getElementById(id);
 function persist(){localStorage.setItem("shredData",JSON.stringify(data));updateStats();renderHistory();renderProgress();}
 function updateStats(){$("total").textContent=data.logs.length;$("workouts").textContent=data.completed.length;}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
-function lastFor(key){return data.logs.filter(x=>x.key===key).at(-1);}
+function lastFor(key,exercise,muscle){return data.logs.filter(x=>x.key===key||(x.exercise===exercise&&String(x.muscle||"Outro")===String(muscle||"Outro"))).at(-1);}
 function progressionHint(log,range){
  const m=String(range||"").match(/(\\d+)\\s*[–-]\\s*(\\d+)/);
  if(!m)return "Referência: compare carga e repetições com a última sessão.";
@@ -157,7 +156,7 @@ function render(){
  $("dayLabel").textContent="TREINO "+day;$("dayTitle").textContent=p.title;$("dayDescription").textContent=p.desc;
  const list=$("exerciseList");list.innerHTML="";
  p.items.forEach((item,index)=>{
-  const key=day+"-"+item[0];const old=lastFor(key);const saved=current[key]||{};
+  const key=day+"-"+item[0]+"-"+(item[3]||"Outro");const old=lastFor(key,item[0],item[3]||"Outro");const saved=current[key]||{};
   const completed=saved.done||[];
   const el=document.createElement("div");el.className="exercise";
   el.innerHTML=`<strong>${index+1}. ${esc(item[0])}</strong><div class="meta">${item[1]} séries · ${esc(item[2])} reps · ${esc(item[3]||"Outro")}</div>
@@ -189,58 +188,66 @@ function render(){
  });
 }
 function saveCurrentAndRender(){localStorage.setItem("shredData",JSON.stringify(data));updateStats();renderHistory();renderProgress();render();}
+function getMuscleNames(){
+ const names=new Map();
+ data.logs.forEach(x=>{const label=String(x.muscle||"Outro").trim()||"Outro";names.set(label.toLocaleLowerCase("pt-BR"),label);});
+ Object.values(data.plans||{}).forEach(p=>(p.items||[]).forEach(it=>{const label=String(it[3]||"Outro").trim()||"Outro";names.set(label.toLocaleLowerCase("pt-BR"),label);}));
+ return [...names.values()].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+}
 function renderHistory(){
- const h=$("historyList");if(!data.logs.length){h.innerHTML='<p class="muted">Seus registros aparecerão aqui.</p>';return;}
- h.innerHTML=data.logs.slice().reverse().slice(0,100).map(x=>`<div class="entry"><div class="entry-title">${esc(x.exercise)} <span class="pill">Treino ${esc(x.day)}</span></div><small>Série ${x.set||"—"} · ${esc(x.weight)} kg · ${esc(x.reps)} reps · ${esc(x.date)}</small></div>`).join("");
+ const h=$("historyList"),sel=$("historyMuscleSelect");if(!h||!sel)return;
+ const previous=sel.value;const names=getMuscleNames();
+ sel.innerHTML='<option value="__all__">Todos os grupos musculares</option>'+names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+ if(names.includes(previous))sel.value=previous;else sel.value="__all__";
+ const selected=sel.value;
+ const logs=data.logs.slice().reverse().filter(x=>selected==="__all__"||String(x.muscle||"Outro").trim()===selected).slice(0,200);
+ if(!logs.length){h.innerHTML='<p class="muted">Ainda não há registros para este grupo muscular.</p>';return;}
+ h.innerHTML=logs.map(x=>`<div class="entry"><div class="entry-title">${esc(x.exercise)} <span class="pill">${esc(x.muscle||"Outro")}</span></div><small>Treino ${esc(x.day||"—")} · Série ${x.set||"—"} · ${esc(x.weight)} kg · ${esc(x.reps)} reps · ${esc(x.date)}</small></div>`).join("");
 }
 function renderProgress(){
- const sel=$("muscleSelect");if(!sel)return;
- const groups=[...new Set([...muscleOptions,...data.logs.map(x=>x.muscle||"Outro")])];
- const previous=sel.value;sel.innerHTML=groups.map(x=>`<option>${esc(x)}</option>`).join("");if(groups.includes(previous))sel.value=previous;
+ const sel=$("workoutSelect");if(!sel)return;
+ const names=getMuscleNames();const previous=sel.value;
+ sel.innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join("");
+ if(names.includes(previous))sel.value=previous;else if(names.includes("Peito"))sel.value="Peito";else if(names.length)sel.value=names[0];
  drawProgress();
 }
-function drawLine(canvasId,points,label){
+function sessionDate(x){
+ const m=String(x.date||"").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+ if(m)return `${m[3]}-${m[2]}-${m[1]}`;
+ if(x.timestamp){const d=new Date(x.timestamp);if(!Number.isNaN(d.getTime()))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;}
+ return String(x.date||"Sem data");
+}
+function drawLine(canvasId,points){
  const c=$(canvasId),ctx=c.getContext("2d"),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);
- const pad=42;ctx.strokeStyle="#354132";ctx.lineWidth=1;
+ const pad=48;ctx.strokeStyle="#354132";ctx.lineWidth=1;
  for(let i=0;i<4;i++){const y=pad+(h-pad*1.5)*i/3;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-12,y);ctx.stroke();}
  if(!points.length){ctx.fillStyle="#9da69a";ctx.font="18px Arial";ctx.fillText("Sem dados suficientes",pad,h/2);return;}
- const vals=points.map(p=>p.value),min=Math.min(...vals),max=Math.max(...vals),range=max-min||1;
- ctx.strokeStyle="#a5ef55";ctx.lineWidth=4;ctx.beginPath();
- points.forEach((p,i)=>{const x=pad+(w-pad-18)*(points.length===1?.5:i/(points.length-1));const y=h-pad-(p.value-min)/range*(h-pad*2);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});
- ctx.stroke();points.forEach((p,i)=>{const x=pad+(w-pad-18)*(points.length===1?.5:i/(points.length-1));const y=h-pad-(p.value-min)/range*(h-pad*2);ctx.fillStyle="#a5ef55";ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fill();});
- ctx.fillStyle="#cbd5c5";ctx.font="13px Arial";ctx.fillText(String(max),5,pad+5);ctx.fillText(String(min),5,h-pad+4);
- ctx.fillStyle="#9da69a";ctx.fillText("Mais antigo",pad,h-8);ctx.fillText("Mais recente",w-100,h-8);
+ const vals=points.map(p=>p.volume),min=Math.min(0,...vals),max=Math.max(...vals),range=max-min||1;
+ const xy=points.map((p,i)=>({x:pad+(w-pad-24)*(points.length===1?.5:i/(points.length-1)),y:h-pad-(p.volume-min)/range*(h-pad*2)}));
+ ctx.strokeStyle="#a5ef55";ctx.lineWidth=4;ctx.beginPath();xy.forEach((p,i)=>{if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});ctx.stroke();
+ xy.forEach((p,i)=>{ctx.fillStyle="#a5ef55";ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();ctx.fillStyle="#cbd5c5";ctx.font="12px Arial";ctx.textAlign="center";ctx.fillText(Math.round(points[i].volume).toLocaleString("pt-BR"),p.x,p.y-12);});
+ ctx.textAlign="left";ctx.fillStyle="#9da69a";ctx.font="12px Arial";
+ ctx.fillText(points[0].label,pad,h-8);ctx.textAlign="right";ctx.fillText(points[points.length-1].label,w-12,h-8);ctx.textAlign="left";
 }
 function drawProgress(){
- if(!$("muscleSelect"))return;const muscle=$("muscleSelect").value;
- const logs=data.logs.filter(x=>(x.muscle||"Outro")===muscle).sort((a,b)=>(a.timestamp||"").localeCompare(b.timestamp||""));
- // Uma observação por sessão/exercício: considera a melhor série registrada naquele dia.
- const grouped=new Map();logs.forEach(x=>{const k=(x.timestamp||x.date||"").slice(0,10)+"|"+x.exercise;const old=grouped.get(k);if(!old||x.weight*x.reps>old.weight*old.reps)grouped.set(k,x);});
- const points=[...grouped.values()].sort((a,b)=>(a.timestamp||"").localeCompare(b.timestamp||""));
- drawLine("weightChart",points.map(x=>({value:Number(x.weight)})),"kg");
- drawLine("repsChart",points.map(x=>({value:Number(x.reps)})),"reps");
- if(!points.length){$("progressSummary").textContent="Registre seus exercícios para visualizar a evolução."; $("progressDetails").innerHTML="";$("recordsList").innerHTML="<p class='muted'>Ainda não há recordes registrados.</p>";$("periodCompare").innerHTML="<p class='muted'>Ainda não há dados para comparar.</p>";return;}
- const first=points[0],last=points[points.length-1],dw=Number(last.weight)-Number(first.weight),dr=Number(last.reps)-Number(first.reps);
- let comparison=`Carga: ${dw>0?"+":""}${dw.toFixed(1)} kg · Repetições: ${dr>0?"+":""}${dr}.`;
- if(dw<0&&dr>0)comparison+=" Você reduziu a carga e aumentou as repetições — observe a evolução do desempenho, não apenas o peso.";
- else if(dw>0&&dr<0)comparison+=" Você aumentou a carga e reduziu as repetições — compare com a faixa planejada.";
- else if(dw>0&&dr>0)comparison+=" Houve aumento tanto de carga quanto de repetições.";
- else if(dw<0&&dr<0)comparison+=" Houve queda em carga e repetições; confira recuperação, execução e contexto do treino.";
- else comparison+=" Compare também a qualidade da execução e a faixa de repetições.";
- $("progressSummary").textContent=`${muscle}: ${points.length} registros analisados. ${comparison}`;
- // Recorde pessoal: maior carga registrada; em empate, maior número de repetições.
- const byExercise={};
- logs.forEach(x=>{const k=x.exercise; if(!byExercise[k]||Number(x.weight)>Number(byExercise[k].weight)||(Number(x.weight)===Number(byExercise[k].weight)&&Number(x.reps)>Number(byExercise[k].reps)))byExercise[k]=x;});
- $("recordsList").innerHTML=Object.values(byExercise).map(x=>`<div class="entry"><strong>${esc(x.exercise)}</strong><br><small>Melhor carga registrada: ${x.weight} kg × ${x.reps} reps</small></div>`).join("");
- // Comparativo dos últimos 7 e 30 dias contra o período imediatamente anterior.
- const now=Date.now(), dayMs=86400000;
- const timeOf=x=>x.timestamp?new Date(x.timestamp).getTime():new Date((x.date||"").split("/").reverse().join("-")).getTime();
- function avgVolume(from,to){const arr=logs.filter(x=>{const t=timeOf(x);return Number.isFinite(t)&&t>=from&&t<to;});if(!arr.length)return null;return arr.reduce((s,x)=>s+Number(x.weight)*Number(x.reps),0)/arr.length;}
- const wNow=avgVolume(now-7*dayMs,now+1),wPrev=avgVolume(now-14*dayMs,now-7*dayMs);
- const mNow=avgVolume(now-30*dayMs,now+1),mPrev=avgVolume(now-60*dayMs,now-30*dayMs);
- const fmt=(a,b)=>a===null||b===null?"Dados insuficientes":`${a>b?"↑":a<b?"↓":"="} ${b?((a-b)/b*100).toFixed(1)+"%":"—"} no volume médio por série`;
- $("periodCompare").innerHTML=`<div class="entry"><strong>Últimos 7 dias × 7 dias anteriores</strong><br><small>${fmt(wNow,wPrev)}</small></div><div class="entry"><strong>Últimos 30 dias × 30 dias anteriores</strong><br><small>${fmt(mNow,mPrev)}</small></div><small class="muted">O volume por série (kg × repetições) é uma referência comparativa, não uma medida isolada de hipertrofia.</small>`;
- $("progressDetails").innerHTML=points.slice().reverse().slice(0,12).map(x=>`<div class="entry"><strong>${esc(x.exercise)}</strong><br><small>${esc(x.date)} · ${x.weight} kg × ${x.reps} reps</small></div>`).join("");
+ const sel=$("workoutSelect");if(!sel)return;const muscle=sel.value;
+ const logs=data.logs.filter(x=>String(x.muscle||"Outro").trim()===String(muscle));
+ const sessionsMap=new Map();
+ logs.forEach(x=>{const dateKey=sessionDate(x),key=String(muscle).toLocaleLowerCase("pt-BR")+"|"+dateKey;let s=sessionsMap.get(key);if(!s){s={muscle,dateKey,label:x.date||dateKey,volume:0,sets:0,exercises:new Set(),workouts:new Set(),timestamp:x.timestamp||dateKey};sessionsMap.set(key,s);}s.volume+=Number(x.weight||0)*Number(x.reps||0);s.sets++;s.exercises.add(x.exercise);s.workouts.add(String(x.day||"—"));if(x.timestamp&&(!s.timestamp||x.timestamp>s.timestamp))s.timestamp=x.timestamp;});
+ const sessions=[...sessionsMap.values()].sort((a,b)=>a.dateKey.localeCompare(b.dateKey));
+ drawLine("workoutChart",sessions);
+ if(!sessions.length){$("progressSummary").textContent="Ainda não há registros deste grupo muscular. Registre suas séries para acompanhar a evolução.";$("sessionCompare").innerHTML="<p class='muted'>A comparação aparecerá após duas sessões registradas.</p>";$("progressDetails").innerHTML="";return;}
+ const current=sessions[sessions.length-1],previous=sessions[sessions.length-2];
+ $("progressSummary").textContent=`Grupo muscular: ${muscle} · ${sessions.length} sessões analisadas · Última sessão: ${Math.round(current.volume).toLocaleString("pt-BR")} kg×reps em ${current.sets} séries registradas.`;
+ if(!previous){$("sessionCompare").innerHTML="<p class='muted'>Registre este treino novamente para comparar com a sessão anterior.</p>";}
+ else{
+  const diff=current.volume-previous.volume,pct=previous.volume?diff/previous.volume*100:0;
+  const status=diff>0?"Evolução":diff<0?"Regressão":"Estável";
+  const color=diff>0?"#a5ef55":diff<0?"#ffd18a":"#cbd5c5";
+  const sign=diff>0?"+":"";
+  $("sessionCompare").innerHTML=`<div class="entry"><strong>${status}: <span style="color:${color}">${sign}${Math.round(diff).toLocaleString("pt-BR")} kg×reps (${sign}${pct.toFixed(1)}%)</span></strong><br><small>Sessão anterior (${previous.label}): ${Math.round(previous.volume).toLocaleString("pt-BR")} · Sessão atual (${current.label}): ${Math.round(current.volume).toLocaleString("pt-BR")}</small></div><small class="muted">O volume total é um indicador geral. Considere também execução, amplitude, descanso e recuperação; uma sessão com séries ou exercícios diferentes pode alterar o resultado.</small>`;
+ }
+ $("progressDetails").innerHTML=sessions.slice().reverse().slice(0,12).map(x=>`<div class="entry"><strong>${esc(x.label)} · ${Math.round(x.volume).toLocaleString("pt-BR")} kg×reps</strong><br><small>${x.sets} séries registradas · ${x.exercises.size} exercícios · Divisão usada: ${[...x.workouts].map(k=>"Treino "+esc(k)).join(", ")}</small></div>`).join("");
 }
 function renderEditor(){
  const p=data.plans[day];if(!p)return;$("editTitle").value=p.title;$("editDesc").value=p.desc;
@@ -258,15 +265,17 @@ function renderEditor(){
 function switchTab(tab){
  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("hidden",v.id!==tab));
  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
- if(tab==="editor")renderEditor();if(tab==="progress")renderProgress();
+ if(tab==="editor")renderEditor();if(tab==="progress")renderProgress();if(tab==="history")renderHistory();
 }
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
 $("daySelect").onchange=e=>{day=e.target.value;render();};
 $("editDaySelect").onchange=e=>{day=e.target.value;renderEditor();render();};
 $("finish").onclick=()=>{if(!confirm("Deseja finalizar este treino?"))return;data.completed.push({day,date:new Date().toLocaleDateString("pt-BR"),timestamp:new Date().toISOString()});persist();alert("Treino concluído! Excelente trabalho.");};
-$("muscleSelect").onchange=drawProgress;
+$("workoutSelect").onchange=drawProgress;
+$("historyMuscleSelect").onchange=renderHistory;
 $("saveDay").onclick=()=>{data.plans[day].title=$("editTitle").value.trim()||data.plans[day].title;data.plans[day].desc=$("editDesc").value.trim();persist();render();renderEditor();alert("Treino atualizado!");};
 $("addDay").onclick=()=>{const key=prompt("Identificador do novo treino (ex.: E, F):");if(!key)return;const k=key.trim().toUpperCase();if(data.plans[k]){alert("Já existe um treino com esse identificador.");return;}const title=prompt("Nome do novo treino:")||"Novo treino";data.plans[k]={title,desc:"",items:[]};day=k;persist();render();renderEditor();};
+$("deleteDay").onclick=()=>{const keys=Object.keys(data.plans);if(keys.length<=1){alert("O aplicativo precisa ter pelo menos um treino. Crie outro antes de excluir este.");return;}const title=data.plans[day].title;if(!confirm(`Excluir o Treino ${day} · ${title}?\n\nOs registros antigos continuarão no histórico e nos backups, mas este treino será removido da lista de treinos.`))return;delete data.plans[day];delete current[day];day=Object.keys(data.plans)[0];persist();render();renderEditor();alert("Treino excluído. O histórico de sessões foi preservado.");};
 $("newMuscle").innerHTML=muscleOptions.map(x=>`<option>${x}</option>`).join("");
 $("addExercise").onclick=()=>{const name=$("newExercise").value.trim(),sets=Number($("newSets").value),range=$("newRange").value.trim(),muscle=$("newMuscle").value;if(!name||!Number.isInteger(sets)||sets<1||sets>20||!range){alert("Preencha nome, séries e faixa de repetições.");return;}data.plans[day].items.push([name,sets,range,muscle]);$("newExercise").value="";$("newRange").value="";persist();render();renderEditor();alert("Exercício adicionado!");};
 function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="shred-mass-backup.json";a.click();URL.revokeObjectURL(url);}
